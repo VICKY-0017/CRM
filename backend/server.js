@@ -12,11 +12,15 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:3000","https://crm-frntd.onrender.com",
+    origin: [
+      "http://localhost:3000", // Local development URL
+      "https://crm-frntd.onrender.com", // Production URL
+    ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
 );
+
 
 
 const userSchema = new mongoose.Schema(
