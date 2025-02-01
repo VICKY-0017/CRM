@@ -19,7 +19,7 @@ const Dashboard = () => {
 
   const fetchDashboardData = async (userType, id) => {
     try {
-      const response = await fetch(`http://localhost:8000/dashboard/${userType}/${id}`);
+      const response = await fetch(`https://crm-c8ht.onrender.com/dashboard/${userType}/${id}`);
       
       if (!response.ok) {
         const errorData = await response.json();
