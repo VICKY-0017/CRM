@@ -196,62 +196,135 @@ console.log("Sending response:", {
   
   
   
-  app.get("/dashboard/:userType/:id", async (req, res) => {
-    const { userType, id } = req.params;
-    console.log("Dashboard request params:", { userType, id });
+  // app.get("/dashboard/:userType/:id", async (req, res) => {
+  //   const { userType, id } = req.params;
+  //   console.log("Dashboard request params:", { userType, id });
   
-    try {
-      let subordinates = [];
-      let query = {};
+  //   try {
+  //     let subordinates = [];
+  //     let query = {};
   
-      // For universe fund users, we need to check universeFundId
-      if (userType === "universe fund") {
-        const universeUser = await User.findById(id);
-        console.log("Universe user found:", universeUser);
-        if (!universeUser) {
-          return res.status(404).json({ message: "User not found" });
-        }
-        query = { parentId: universeUser.universeFundId, userType: "franchise" };
-      } 
-      // For franchise users
-      else if (userType === "franchise") {
-        const franchiseUser = await User.findById(id);
-        if (!franchiseUser) {
-          return res.status(404).json({ message: "User not found" });
+  //     // For universe fund users, we need to check universeFundId
+  //     if (userType === "universe fund") {
+  //       const universeUser = await User.findById(id);
+  //       console.log("Universe user found:", universeUser);
+  //       if (!universeUser) {
+  //         return res.status(404).json({ message: "User not found" });
+  //       }
+  //       query = { parentId: universeUser.universeFundId, userType: "franchise" };
+  //     } 
+  //     // For franchise users
+  //     else if (userType === "franchise") {
+  //       const franchiseUser = await User.findById(id);
+  //       if (!franchiseUser) {
+  //         return res.status(404).json({ message: "User not found" });
           
-        }
-        query = { parentId: franchiseUser.uniqueId, userType: "sub-franchise" };
-      }
-      // For sub-franchise users
-      else if (userType === "sub-franchise") {
-        const subFranchiseUser = await User.findById(id);
-        if (!subFranchiseUser) {
-          return res.status(404).json({ message: "User not found" });
-        }
-        query = { parentId: subFranchiseUser.uniqueId, userType: "channel-partner" };
-        console.log("Query for subordinates:", query);
-      }
+  //       }
+  //       query = { parentId: franchiseUser.uniqueId, userType: "sub-franchise" };
+  //     }
+  //     // For sub-franchise users
+  //     else if (userType === "sub-franchise") {
+  //       const subFranchiseUser = await User.findById(id);
+  //       if (!subFranchiseUser) {
+  //         return res.status(404).json({ message: "User not found" });
+  //       }
+  //       query = { parentId: subFranchiseUser.uniqueId, userType: "channel-partner" };
+  //       console.log("Query for subordinates:", query);
+  //     }
   
-      subordinates = await User.find(query);
-      console.log("Found subordinates:", subordinates);
+  //     subordinates = await User.find(query);
+  //     console.log("Found subordinates:", subordinates);
   
-      // Only send essential fields
-      const result = subordinates.map(subordinate => ({
-        name: subordinate.name,
-        phone: subordinate.phone,
-        id: subordinate._id,
-        uniqueId: subordinate.uniqueId,
-        parentType: subordinate.userType,
-      }));
+  //     // Only send essential fields
+  //     const result = subordinates.map(subordinate => ({
+  //       name: subordinate.name,
+  //       phone: subordinate.phone,
+  //       id: subordinate._id,
+  //       uniqueId: subordinate.uniqueId,
+  //       parentType: subordinate.userType,
+  //     }));
   
-      res.status(200).json(result);
-    } catch (error) {
-      console.error("Dashboard error:", error);
-      res.status(500).json({ message: "Server error while fetching dashboard data." });
+  //     res.status(200).json(result);
+  //   } catch (error) {
+  //     console.error("Dashboard error:", error);
+  //     res.status(500).json({ message: "Server error while fetching dashboard data." });
+  //   }
+  // });
+
+// Backend route
+app.get("/dashboard/:userType/:id", async (req, res) => {
+  const { userType, id } = req.params;
+  console.log("Dashboard request params:", { userType, id });
+
+  try {
+    let hierarchyData = [];
+    
+    // Function to fetch children recursively
+    async function fetchChildren(parentId, type) {
+      const typeHierarchy = {
+        "universe fund": "franchise",
+        "franchise": "sub-franchise",
+        "sub-franchise": "channel-partner"
+      };
+
+      // If we've reached the end of the hierarchy, return
+      if (!typeHierarchy[type]) return [];
+
+      // Determine query based on user type
+      const query = type === "universe fund" 
+        ? { parentId: parentId, userType: typeHierarchy[type] }
+        : { parentId: parentId, userType: typeHierarchy[type] };
+
+      const children = await User.find(query);
+      
+      // Recursively fetch children for each child
+      const childrenWithSubordinates = await Promise.all(
+        children.map(async (child) => {
+          const childData = {
+            id: child._id,
+            name: child.name,
+            phone: child.phone,
+            uniqueId: child.uniqueId,
+            userType: child.userType,
+            universeFundId: rootUser.universeFundId || null, 
+            level: typeHierarchy[type],
+            children: await fetchChildren(
+              child.uniqueId,
+              typeHierarchy[type]
+            )
+          };
+          return childData;
+        })
+      );
+
+      return childrenWithSubordinates;
     }
-  });
 
+    // Start fetching from the requested user
+    const rootUser = await User.findById(id);
+    if (!rootUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    hierarchyData = {
+      id: rootUser._id,
+      name: rootUser.name,
+      phone: rootUser.phone,
+      uniqueId: rootUser.uniqueId,
+      userType: rootUser.userType,
+      level: userType,
+      children: await fetchChildren(
+        userType === "universe fund" ? rootUser.universeFundId : rootUser.uniqueId,
+        userType
+      )
+    };
+
+    res.status(200).json(hierarchyData);
+  } catch (error) {
+    console.error("Dashboard error:", error);
+    res.status(500).json({ message: "Server error while fetching dashboard data." });
+  }
+});
 
 
 
@@ -260,3 +333,14 @@ app.listen(PORT, () => {
 });
 
 export default app;
+
+
+
+
+
+
+
+
+
+
+
