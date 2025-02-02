@@ -294,3 +294,177 @@
 .error-card {
   color: #fa8072;
 }
+
+
+
+/* Responsive Breakpoints */
+@media screen and (max-width: 1200px) {
+  :root {
+    --sidebar-width: 280px;
+    --header-height: 70px;
+  }
+
+  .dashboard-title {
+    font-size: 1.75rem;
+  }
+  
+  .stat-item {
+    padding: 1rem;
+  }
+  
+  .stat-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  :root {
+    --sidebar-width: 240px;
+  }
+
+  .user-card,
+  .quick-stats,
+  .insights-section,
+  .hierarchy-section {
+    padding: 1.25rem;
+  }
+
+  .chart-container {
+    padding: 1rem;
+  }
+
+  .node-header {
+    padding: 0.75rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    --sidebar-width: 100%;
+    --header-height: 60px;
+  }
+
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .dashboard-sidebar {
+    position: relative;
+    width: 100%;
+    top: 0;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .sidebar-content {
+    padding: 1rem;
+  }
+
+  .dashboard-main {
+    margin-left: 0;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-item {
+    margin-bottom: 0;
+  }
+
+  .hierarchy-scroll {
+    max-height: calc(100vh - 600px);
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .dashboard-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .dashboard-title {
+    font-size: 1.5rem;
+  }
+
+  .quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .node-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .node-right {
+    width: 100%;
+  }
+
+  .id-tag {
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  .hierarchy-node {
+    margin-left: 0 !important;
+  }
+
+  .node-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .expand-icon {
+    align-self: flex-end;
+    margin-bottom: 0.5rem;
+  }
+
+  .chart-container {
+    height: 300px !important;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) {
+  .node-header:hover {
+    background: var(--bg-card-hover);
+  }
+
+  .stat-item:hover {
+    transform: none;
+  }
+}
+
+/* Dark Mode Optimization */
+@media (prefers-color-scheme: dark) {
+  .hierarchy-node {
+    border-left-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .dashboard-wrapper {
+    background: white;
+  }
+
+  .dashboard-sidebar,
+  .dashboard-header {
+    display: none;
+  }
+
+  .dashboard-main {
+    margin-left: 0;
+  }
+
+  .hierarchy-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+}
