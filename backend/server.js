@@ -241,7 +241,7 @@ console.log("Sending response:", {
         phone: subordinate.phone,
         id: subordinate._id,
         uniqueId: subordinate.uniqueId,
-        parentType: subordinate.parentType,
+        parentType: subordinate.userType,
       }));
   
       res.status(200).json(result);
