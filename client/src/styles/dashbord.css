@@ -211,6 +211,37 @@
   font-weight: 600;
 }
 
+/* Chart Styles */
+.pie-chart-legend {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-text {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+/* Update chart container styles */
 .chart-container {
   background: var(--bg-card-hover);
   border-radius: 10px;
@@ -443,9 +474,16 @@
   }
 
   .chart-container {
-    height: auto;
-    aspect-ratio: 4/3;
-    margin: 1rem 0;
+    height: 400px;
+    padding: 0.5rem;
+  }
+
+  .pie-chart-legend {
+    margin-top: 0.5rem;
+  }
+
+  .legend-item {
+    font-size: 0.75rem;
   }
 
   .hierarchy-scroll {
@@ -505,8 +543,20 @@
   }
 
   .chart-container {
-    aspect-ratio: 1/1;
-    margin: 0.5rem 0;
+    height: 350px;
+  }
+
+  .pie-chart-legend {
+    margin-top: 0.25rem;
+  }
+
+  .legend-color {
+    width: 10px;
+    height: 10px;
+  }
+
+  .legend-text {
+    font-size: 0.75rem;
   }
 
   .node-header {
