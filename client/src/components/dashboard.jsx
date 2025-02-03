@@ -10,6 +10,7 @@ import {
   PieChart,
   Pie,
   Cell,
+  Legend
 } from 'recharts';
 import {
   Users,
@@ -80,11 +81,19 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [insights, setInsights] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   useEffect(() => {
     if (user) {
       fetchHierarchyData(user.userType, user.id);
     }
+
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [user]);
 
   const calculateInsights = (data) => {
@@ -147,6 +156,45 @@ const Dashboard = () => {
 
   const closeSidebar = () => {
     setIsSidebarOpen(false);
+  };
+
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+    if (windowWidth <= 768) return null;
+    
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius * 1.1;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? 'start' : 'end'}
+        dominantBaseline="central"
+        fontSize="12"
+      >
+        {`${name}: ${(percent * 100).toFixed(1)}%`}
+      </text>
+    );
+  };
+
+  const renderLegend = (props) => {
+    const { payload } = props;
+    
+    return (
+      <ul className="pie-chart-legend">
+        {payload.map((entry, index) => (
+          <li key={`legend-${index}`} className="legend-item">
+            <span className="legend-color" style={{ backgroundColor: entry.color }}></span>
+            <span className="legend-text">
+              {entry.payload.name}: {entry.payload.percentage}%
+            </span>
+          </li>
+        ))}
+      </ul>
+    );
   };
 
   if (!user) {
@@ -222,11 +270,10 @@ const Dashboard = () => {
                           data={insights.distribution}
                           cx="50%"
                           cy="50%"
-                          outerRadius="80%"
+                          outerRadius={windowWidth <= 768 ? "60%" : "80%"}
                           dataKey="value"
-                          label={({ name, percentage }) =>
-                            `${name}: ${percentage}%`
-                          }
+                          labelLine={false}
+                          label={renderCustomizedLabel}
                         >
                           {insights.distribution.map((entry, index) => (
                             <Cell
@@ -235,6 +282,13 @@ const Dashboard = () => {
                             />
                           ))}
                         </Pie>
+                        {windowWidth <= 768 && (
+                          <Legend
+                            content={renderLegend}
+                            verticalAlign="bottom"
+                            align="center"
+                          />
+                        )}
                         <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
